@@ -1,4 +1,4 @@
-const CACHE_NAME = "Carnet d'entretiens - v1";
+const CACHE_NAME = "Carnet d'entretien - v1";
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
