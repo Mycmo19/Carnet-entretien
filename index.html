@@ -17,7 +17,7 @@
   <!-- ================= ÉCRAN D'AUTHENTIFICATION ================= -->
   <div id="authSection" class="max-w-md mx-auto my-12 bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl">
     <div class="text-center mb-6">
-      <h1 class="text-3xl font-bold text-blue-400">🚗 Carnet d'entretien</h1>
+      <h1 class="text-3xl font-bold text-blue-400">Carnet d'entretien</h1>
       <p class="text-slate-400 text-sm mt-1">Connectez-vous pour accéder à vos véhicules</p>
     </div>
 
@@ -72,7 +72,7 @@
     <!-- En-tête -->
     <header class="bg-slate-800 p-6 rounded-xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-blue-400">🚗 Carnet d'entretien</h1>
+        <h1 class="text-2xl font-bold text-blue-400">Carnet d'entretien</h1>
         <p class="text-slate-400 text-sm">Compte : <span id="userEmailDisplay" class="text-slate-200 font-medium"></span></p>
       </div>
 
@@ -99,6 +99,7 @@
         <select id="newVehicleType" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-200">
           <option value="🚗 Auto">🚗 Automobile</option>
           <option value="🏍️ Moto">🏍️ Moto</option>
+          
         </select>
         <button id="btnAddVehicle" type="button" class="bg-blue-600 hover:bg-blue-500 text-white font-medium p-2 rounded-lg text-sm">
           Enregistrer le véhicule
@@ -114,6 +115,7 @@
         <select id="editVehicleType" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-200">
           <option value="🚗 Auto">🚗 Automobile</option>
           <option value="🏍️ Moto">🏍️ Moto</option>
+        
         </select>
         <div class="flex gap-2">
           <button id="btnSaveEditVehicle" type="button" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-medium p-2 rounded-lg text-sm">
@@ -146,13 +148,16 @@
             <label class="block text-xs text-slate-400 mb-1">Type d'opération / Achat</label>
             <select id="type" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
               <option value="Vidange moteur">Vidange moteur</option>
-              <option value="Changement Freins">Changement Freins</option>
+              <option value="Filtre à huile">Filtre à huile</option>
+              <option value="Freinage">Freinage</option>
               <option value="Kit de distribution / Chaîne">Kit distribution / Chaîne</option>
               <option value="Pneumatiques">Pneumatiques</option>
               <option value="Bougies">Bougies</option>
-              <option value="Filtre à air / habitacle">Filtre à air / habitacle</option>
-              <option value="Achat Pièce / Accessoire">🛒 Achat Pièce / Accessoire</option>
-              <option value="Achat du véhicule">🚗 Achat du véhicule</option>
+              <option value="Filtre Habitacle">Filtre Habitacle</option>
+              <option value="Filtre à air">Filtre à air</option>
+              <option value="Filtre à carburant">Filtre à carburant</option>
+              <option value="Achat Pièce / Accessoire">Achat Pièce / Accessoire</option>
+              <option value="Achat du véhicule">Achat du véhicule</option> 
               <option value="Autre entretien">Autre entretien</option>
             </select>
           </div>
