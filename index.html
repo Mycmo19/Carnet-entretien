@@ -5,13 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MonCarNote - Carnet d'entretien Cloud</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MonCarNote">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/741/741407.png">
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8">
 
   <!-- ================= ÉCRAN D'AUTHENTIFICATION ================= -->
   <div id="authSection" class="max-w-md mx-auto my-12 bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl">
     <div class="text-center mb-6">
-      <h1 class="text-3xl font-bold text-blue-400">🚗 Carnet d'entretien</h1>
+      <h1 class="text-3xl font-bold text-blue-400">🚗 Carnet d'entretiens</h1>
       <p class="text-slate-400 text-sm mt-1">Connectez-vous pour accéder à vos véhicules</p>
     </div>
 
@@ -25,10 +31,10 @@
       </button>
     </div>
 
-    <!-- Banner d'erreur ou d'information -->
+    <!-- Message d'erreur -->
     <div id="authError" class="hidden mb-4 p-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg"></div>
 
-    <!-- Formulaire -->
+    <!-- Formulaire d'Auth -->
     <form id="authForm" class="space-y-4">
       <div>
         <label class="block text-xs text-slate-400 mb-1">Adresse E-mail</label>
@@ -46,13 +52,13 @@
         </div>
       </div>
 
-      <!-- Confirmer mot de passe (Inscription) -->
+      <!-- Champ de confirmation (visible uniquement en inscription) -->
       <div id="confirmPasswordContainer" class="hidden">
         <label class="block text-xs text-slate-400 mb-1">Confirmer le mot de passe</label>
         <input type="password" id="authConfirmPassword" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
       </div>
 
-      <!-- Bouton principal -->
+      <!-- Bouton principal grand et lisible -->
       <button type="submit" id="btnSubmitAuth" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 px-4 rounded-xl text-base transition-all shadow-lg hover:shadow-blue-500/20 active:scale-[0.98] mt-4 flex items-center justify-center min-h-[48px]">
         Se connecter
       </button>
@@ -70,6 +76,7 @@
         <p class="text-slate-400 text-sm">Compte : <span id="userEmailDisplay" class="text-slate-200 font-medium"></span></p>
       </div>
 
+      <!-- Actions Véhicule & Déconnexion -->
       <div class="flex items-center gap-2 w-full md:w-auto flex-wrap">
         <div>
           <label class="block text-xs text-slate-400 mb-1">Véhicule sélectionné</label>
@@ -84,7 +91,7 @@
       </div>
     </header>
 
-    <!-- Ajout véhicule -->
+    <!-- Formulaire d'ajout de véhicule -->
     <div id="newVehicleForm" class="hidden bg-slate-800 p-4 rounded-xl border border-blue-500/50 space-y-3">
       <h3 class="text-sm font-semibold text-blue-400">Ajouter un nouveau véhicule</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -92,6 +99,7 @@
         <select id="newVehicleType" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-200">
           <option value="🚗 Auto">🚗 Automobile</option>
           <option value="🏍️ Moto">🏍️ Moto</option>
+          <option value="🚐 Utilitaire">🚐 Utilitaire</option>
         </select>
         <button id="btnAddVehicle" type="button" class="bg-blue-600 hover:bg-blue-500 text-white font-medium p-2 rounded-lg text-sm">
           Enregistrer le véhicule
@@ -99,7 +107,7 @@
       </div>
     </div>
 
-    <!-- Édition véhicule -->
+    <!-- Formulaire d'édition de véhicule -->
     <div id="editVehicleForm" class="hidden bg-slate-800 p-4 rounded-xl border border-amber-500/50 space-y-3">
       <h3 class="text-sm font-semibold text-amber-400">Modifier le véhicule actif</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -107,6 +115,7 @@
         <select id="editVehicleType" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-200">
           <option value="🚗 Auto">🚗 Automobile</option>
           <option value="🏍️ Moto">🏍️ Moto</option>
+          <option value="🚐 Utilitaire">🚐 Utilitaire</option>
         </select>
         <div class="flex gap-2">
           <button id="btnSaveEditVehicle" type="button" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-medium p-2 rounded-lg text-sm">
@@ -119,7 +128,7 @@
       </div>
     </div>
 
-    <!-- Onglets Principaux -->
+    <!-- Navigation par Onglets -->
     <div class="flex border-b border-slate-700 gap-4">
       <button id="tabCarnet" type="button" class="pb-3 px-2 text-sm font-semibold text-blue-400 border-b-2 border-blue-500 transition-colors">
         📋 Carnet & Achats
@@ -129,7 +138,7 @@
       </button>
     </div>
 
-    <!-- CARNET & ACHATS -->
+    <!-- ONGLET 1 : CARNET & ACHATS -->
     <div id="sectionCarnet" class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <section class="bg-slate-800 p-6 rounded-xl border border-slate-700 md:col-span-1">
         <h2 class="text-lg font-semibold text-slate-200 mb-4 border-b border-slate-700 pb-2">Ajouter un entretien</h2>
@@ -188,7 +197,7 @@
       </section>
     </div>
 
-    <!-- MÉTHODES -->
+    <!-- ONGLET 2 : MÉTHODES -->
     <div id="sectionMethodes" class="hidden space-y-4">
       <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
         <h2 class="text-lg font-semibold text-slate-200 mb-4 border-b border-slate-700 pb-2">Guide des opérations courantes</h2>
@@ -219,7 +228,16 @@
 
   </div>
 
-  <!-- ================= SCRIPT FIREBASE CORRIGÉ ================= -->
+  <!-- Script Service Worker (PWA) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('[PWA] Service Worker enregistré avec succès'))
+        .catch((err) => console.error('[PWA] Erreur Service Worker :', err));
+    }
+  </script>
+
+  <!-- ================= SCRIPT FIREBASE & APPLICATION ================= -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
@@ -253,7 +271,6 @@
       measurementId: "G-DZ26R3FKFX"
     };
 
-    console.log("[MonCarNote] Initialisation de Firebase...");
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
@@ -341,11 +358,10 @@
       }
 
       btnSubmitAuth.disabled = true;
-      btnSubmitAuth.textContent = "Connexion en cours...";
+      btnSubmitAuth.textContent = "Patientez...";
 
       try {
         if (isRegisterMode) {
-          console.log("[MonCarNote] Création de compte pour :", email);
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           await addDoc(collection(db, "vehicles"), {
             userId: userCredential.user.uid,
@@ -354,11 +370,9 @@
             createdAt: new Date()
           });
         } else {
-          console.log("[MonCarNote] Tentative de connexion pour :", email);
           await signInWithEmailAndPassword(auth, email, password);
         }
       } catch (err) {
-        console.error("[MonCarNote] Erreur Auth :", err);
         authError.textContent = translateFirebaseError(err.code);
         authError.classList.remove('hidden');
         btnSubmitAuth.disabled = false;
@@ -377,10 +391,9 @@
 
       try {
         await sendPasswordResetEmail(auth, email);
-        alert("📧 Un e-mail de réinitialisation de mot de passe a été envoyé à " + email + ".");
+        alert("📧 Un e-mail de réinitialisation a été envoyé à " + email + ".");
         authError.classList.add('hidden');
       } catch (err) {
-        console.error("[MonCarNote] Erreur Reset Email :", err);
         authError.textContent = translateFirebaseError(err.code);
         authError.classList.remove('hidden');
       }
@@ -388,20 +401,14 @@
 
     btnLogout.addEventListener('click', () => signOut(auth));
 
-    // DÉTECTION ÉTAT AUTHENTIFICATION
     onAuthStateChanged(auth, async (user) => {
-      console.log("[MonCarNote] Changement d'état Auth :", user ? user.email : "Déconnecté");
       if (user) {
         currentUser = user;
         userEmailDisplay.textContent = user.email;
-        
-        // Basculer l'affichage immédiatement
         authSection.classList.add('hidden');
         appSection.classList.remove('hidden');
-        
         btnSubmitAuth.disabled = false;
         btnSubmitAuth.textContent = "Se connecter";
-
         await fetchVehicles();
       } else {
         currentUser = null;
@@ -419,7 +426,6 @@
         case 'auth/weak-password': return "Le mot de passe doit faire au moins 6 caractères.";
         case 'auth/user-not-found': return "Aucun compte n'est associé à cette adresse e-mail.";
         case 'auth/invalid-email': return "Format d'adresse e-mail invalide.";
-        case 'auth/unauthorized-domain': return "Domaine non autorisé dans la console Firebase.";
         default: return "Erreur (" + code + ")";
       }
     }
@@ -429,7 +435,6 @@
       if (!currentUser) return;
       vehicles = [];
       try {
-        console.log("[MonCarNote] Chargement des véhicules depuis Firestore...");
         const q = query(collection(db, "vehicles"), where("userId", "==", currentUser.uid));
         const querySnapshot = await getDocs(q);
 
@@ -437,16 +442,13 @@
           vehicles.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        console.log("[MonCarNote] Véhicules trouvés :", vehicles.length);
-
         if (vehicles.length > 0 && !vehicles.find(v => v.id === currentVehicleId)) {
           currentVehicleId = vehicles[0].id;
         }
 
         renderVehicles();
       } catch (err) {
-        console.error("[MonCarNote] Erreur Firestore Véhicules :", err);
-        alert("Erreur lors de la récupération des véhicules : " + err.message);
+        alert("Erreur de chargement des véhicules : " + err.message);
       }
     }
 
@@ -510,7 +512,6 @@
         newVehicleForm.classList.add('hidden');
         await fetchVehicles();
       } catch (err) {
-        console.error("[MonCarNote] Erreur ajout véhicule :", err);
         alert("Erreur lors de l'ajout : " + err.message);
       } finally {
         btnAddVehicle.disabled = false;
@@ -584,7 +585,7 @@
         logs.sort((a, b) => new Date(b.date) - new Date(a.date));
         renderLogs();
       } catch (err) {
-        console.error("[MonCarNote] Erreur révisions :", err);
+        console.error("Erreur révisions:", err);
       }
     }
 
@@ -601,7 +602,7 @@
       totalCostBadge.textContent = `Total : ${totalCost.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`;
 
       if (logs.length === 0) {
-        logList.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">Aucun entretien enregistré pour ce véhicule.</p>';
+        logList.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">Aucun entretien enregistré.</p>';
         return;
       }
 
