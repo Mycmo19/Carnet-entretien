@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MonCarNote - Carnet d'entretien Cloud</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8">
+
+  <!-- ================= ÉCRAN D'AUTHENTIFICATION ================= -->
+  <div id="authSection" class="max-w-md mx-auto my-12 bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl">
+    <div class="text-center mb-6">
+      <h1 class="text-3xl font-bold text-blue-400">🚗 MonCarNote</h1>
+      <p class="text-slate-400 text-sm mt-1">Connectez-vous pour accéder à vos véhicules</p>
+    </div>
+
+    <!-- Onglets Connexion / Inscription -->
+    <div class="flex border-b border-slate-700 mb-6">
+      <button id="tabLogin" type="button" class="w-1/2 pb-2 text-center text-sm font-semibold text-blue-400 border-b-2 border-blue-500">
+        Connexion
+      </button>
+      <button id="tabRegister" type="button" class="w-1/2 pb-2 text-center text-sm font-semibold text-slate-400 hover:text-slate-200">
+        Inscription
+      </button>
+    </div>
+
+    <!-- Banner d'erreur ou d'information -->
+    <div id="authError" class="hidden mb-4 p-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg"></div>
+
+    <!-- Formulaire -->
+    <form id="authForm" class="space-y-4">
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Adresse E-mail</label>
+        <input type="email" id="authEmail" required placeholder="mon.email@exemple.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+      </div>
+
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Mot de passe (6 caractères min.)</label>
+        <input type="password" id="authPassword" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+        
+        <div class="text-right mt-1.5">
+          <button id="btnForgotPassword" type="button" class="text-xs text-blue-400 hover:underline">
+            Mot de passe oublié ?
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirmer mot de passe (Inscription) -->
+      <div id="confirmPasswordContainer" class="hidden">
+        <label class="block text-xs text-slate-400 mb-1">Confirmer le mot de passe</label>
+        <input type="password" id="authConfirmPassword" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+      </div>
+
+      <!-- Bouton principal -->
+      <button type="submit" id="btnSubmitAuth" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 px-4 rounded-xl text-base transition-all shadow-lg hover:shadow-blue-500/20 active:scale-[0.98] mt-4 flex items-center justify-center min-h-[48px]">
+        Se connecter
+      </button>
+    </form>
+  </div>
+
+
+  <!-- ================= APPLICATION PRINCIPALE ================= -->
+  <div id="appSection" class="hidden max-w-4xl mx-auto space-y-6">
+    
+    <!-- En-tête -->
+    <header class="bg-slate-800 p-6 rounded-xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-blue-400">🚗 MonCarNote</h1>
+        <p class="text-slate-400 text-sm">Compte : <span id="userEmailDisplay" class="text-slate-200 font-medium"></span></p>
+      </div>
+
+      <div class="flex items-center gap-2 w-full md:w-auto flex-wrap">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Véhicule sélectionné</label>
+          <select id="vehicleSelect" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 font-semibold">
+          </select>
+        </div>
+        
+        <button id="btnEditVehicle" type="button" title="Modifier" class="mt-5 bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 border border-amber-500/30 p-2 rounded-lg text-xs">✏️</button>
+        <button id="btnDeleteVehicle" type="button" title="Supprimer" class="mt-5 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 p-2 rounded-lg text-xs">🗑️</button>
+        <button id="btnToggleNewVehicle" type="button" class="mt-5 bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-lg text-xs">➕ Ajouter</button>
+        <button id="btnLogout" type="button" class="mt-5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 p-2 rounded-lg text-xs transition-colors">🚪 Déconnexion</button>
+      </div>
+    </header>
+
+    <!-- Ajout véhicule -->
+    <div id="newVehicleForm" class="hidden bg-slate-800 p-4 rounded-xl border border-blue-500/50 space-y-3">
+      <h3 class="text-sm font-semibold text-blue-400">Ajouter un nouveau véhicule</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <input type="text" id="newVehicleName" placeholder="Nom (ex: Renault Clio, Yamaha MT-07)" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-200">
+        <select id="newVehicleType" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-200">
+          <option value="🚗 Auto">🚗 Automobile</option>
+          <option value="🏍️ Moto">🏍️ Moto</option>
+          <option value="🚐 Utilitaire">🚐 Utilitaire</option>
+        </select>
+        <button id="btnAddVehicle" type="button" class="bg-blue-600 hover:bg-blue-500 text-white font-medium p-2 rounded-lg text-sm">
+          Enregistrer le véhicule
+        </button>
+      </div>
+    </div>
+
+    <!-- Édition véhicule -->
+    <div id="editVehicleForm" class="hidden bg-slate-800 p-4 rounded-xl border border-amber-500/50 space-y-3">
+      <h3 class="text-sm font-semibold text-amber-400">Modifier le véhicule actif</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <input type="text" id="editVehicleName" placeholder="Nouveau nom" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-200">
+        <select id="editVehicleType" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-200">
+          <option value="🚗 Auto">🚗 Automobile</option>
+          <option value="🏍️ Moto">🏍️ Moto</option>
+          <option value="🚐 Utilitaire">🚐 Utilitaire</option>
+        </select>
+        <div class="flex gap-2">
+          <button id="btnSaveEditVehicle" type="button" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-medium p-2 rounded-lg text-sm">
+            Mettre à jour
+          </button>
+          <button id="btnCancelEditVehicle" type="button" class="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded-lg text-sm">
+            Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglets Principaux -->
+    <div class="flex border-b border-slate-700 gap-4">
+      <button id="tabCarnet" type="button" class="pb-3 px-2 text-sm font-semibold text-blue-400 border-b-2 border-blue-500 transition-colors">
+        📋 Carnet & Achats
+      </button>
+      <button id="tabMethodes" type="button" class="pb-3 px-2 text-sm font-semibold text-slate-400 hover:text-slate-200 transition-colors">
+        🔧 Méthodes de réparation
+      </button>
+    </div>
+
+    <!-- CARNET & ACHATS -->
+    <div id="sectionCarnet" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section class="bg-slate-800 p-6 rounded-xl border border-slate-700 md:col-span-1">
+        <h2 class="text-lg font-semibold text-slate-200 mb-4 border-b border-slate-700 pb-2">Ajouter un entretien</h2>
+        
+        <form id="maintenanceForm" class="space-y-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Type d'opération / Achat</label>
+            <select id="type" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+              <option value="Vidange moteur">Vidange moteur</option>
+              <option value="Changement Freins">Changement Freins</option>
+              <option value="Kit de distribution / Chaîne">Kit distribution / Chaîne</option>
+              <option value="Pneumatiques">Pneumatiques</option>
+              <option value="Bougies">Bougies</option>
+              <option value="Filtre à air / habitacle">Filtre à air / habitacle</option>
+              <option value="Achat Pièce / Accessoire">🛒 Achat Pièce / Accessoire</option>
+              <option value="Autre entretien">Autre entretien</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Date</label>
+            <input type="date" id="date" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Kilométrage (km)</label>
+            <input type="number" id="km" required placeholder="ex: 45000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Coût (€) - Facultatif</label>
+            <input type="number" step="0.01" id="price" placeholder="ex: 49.90" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Prochaine révision à (km)</label>
+            <input type="number" id="nextKm" placeholder="Automatique (+10000)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-lg text-sm transition-colors shadow-lg">
+            Enregistrer
+          </button>
+        </form>
+      </section>
+
+      <!-- Historique -->
+      <section class="bg-slate-800 p-6 rounded-xl border border-slate-700 md:col-span-2">
+        <h2 class="text-lg font-semibold text-slate-200 mb-4 border-b border-slate-700 pb-2 flex justify-between items-center flex-wrap gap-2">
+          <span>Historique Cloud</span>
+          <div class="flex items-center gap-2">
+            <span id="totalCostBadge" class="text-xs bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-500/30 font-semibold">Total : 0 €</span>
+            <span id="activeVehicleBadge" class="text-xs bg-blue-500/20 text-blue-400 px-2.5 py-1 rounded-full border border-blue-500/30"></span>
+          </div>
+        </h2>
+        <div id="logList" class="space-y-3"></div>
+      </section>
+    </div>
+
+    <!-- MÉTHODES -->
+    <div id="sectionMethodes" class="hidden space-y-4">
+      <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+        <h2 class="text-lg font-semibold text-slate-200 mb-4 border-b border-slate-700 pb-2">Guide des opérations courantes</h2>
+        
+        <div class="space-y-4">
+          <details class="bg-slate-900 p-4 rounded-lg border border-slate-700 cursor-pointer">
+            <summary class="font-medium text-blue-400">🛢️ Vidange Moteur (Auto & Moto)</summary>
+            <ol class="list-decimal list-inside text-sm text-slate-300 mt-3 space-y-2 border-t border-slate-800 pt-3">
+              <li>Faire chauffer légèrement le moteur.</li>
+              <li>Dévisser le bouchon de vidange sous le carter.</li>
+              <li>Remplacer le filtre à huile et le joint de vidange.</li>
+              <li>Resserrer et faire le niveau d'huile selon préconisation constructeur.</li>
+            </ol>
+          </details>
+
+          <details class="bg-slate-900 p-4 rounded-lg border border-slate-700 cursor-pointer">
+            <summary class="font-medium text-blue-400">⚙️ Graissage et Tension de Chaîne (Moto)</summary>
+            <ol class="list-decimal list-inside text-sm text-slate-300 mt-3 space-y-2 border-t border-slate-800 pt-3">
+              <li>Mettre la moto sur béquille d'atelier.</li>
+              <li>Nettoyer la chaîne avec du dégraissant et une brosse adaptées.</li>
+              <li>Vérifier le débattement de la chaîne et ajuster via les tendeurs de roue arrière.</li>
+              <li>Appliquer de la graisse pour chaîne sur la face interne.</li>
+            </ol>
+          </details>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= SCRIPT FIREBASE CORRIGÉ ================= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword, 
+      sendPasswordResetEmail,
+      onAuthStateChanged, 
+      signOut 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      getDocs, 
+      query, 
+      where, 
+      deleteDoc, 
+      doc, 
+      updateDoc 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCOTpaWBeAiMs5G1aRlB09Dq4X7ECMkEAA",
+      authDomain: "carnet-entretiens.firebaseapp.com",
+      databaseURL: "https://carnet-entretiens-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "carnet-entretiens",
+      storageBucket: "carnet-entretiens.firebasestorage.app",
+      messagingSenderId: "813313737197",
+      appId: "1:813313737197:web:bc86379565775c1dc767e4",
+      measurementId: "G-DZ26R3FKFX"
+    };
+
+    console.log("[MonCarNote] Initialisation de Firebase...");
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    let vehicles = [];
+    let currentVehicleId = null;
+    let logs = [];
+    let isRegisterMode = false;
+
+    // DOM Elements
+    const authSection = document.getElementById('authSection');
+    const appSection = document.getElementById('appSection');
+    const authForm = document.getElementById('authForm');
+    const authEmail = document.getElementById('authEmail');
+    const authPassword = document.getElementById('authPassword');
+    const authConfirmPassword = document.getElementById('authConfirmPassword');
+    const confirmPasswordContainer = document.getElementById('confirmPasswordContainer');
+    const btnForgotPassword = document.getElementById('btnForgotPassword');
+    const authError = document.getElementById('authError');
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const btnSubmitAuth = document.getElementById('btnSubmitAuth');
+    const btnLogout = document.getElementById('btnLogout');
+    const userEmailDisplay = document.getElementById('userEmailDisplay');
+
+    const vehicleSelect = document.getElementById('vehicleSelect');
+    const activeVehicleBadge = document.getElementById('activeVehicleBadge');
+    const totalCostBadge = document.getElementById('totalCostBadge');
+    const logList = document.getElementById('logList');
+    const maintenanceForm = document.getElementById('maintenanceForm');
+
+    const tabCarnet = document.getElementById('tabCarnet');
+    const tabMethodes = document.getElementById('tabMethodes');
+    const sectionCarnet = document.getElementById('sectionCarnet');
+    const sectionMethodes = document.getElementById('sectionMethodes');
+
+    const btnToggleNewVehicle = document.getElementById('btnToggleNewVehicle');
+    const btnAddVehicle = document.getElementById('btnAddVehicle');
+    const newVehicleForm = document.getElementById('newVehicleForm');
+
+    const btnEditVehicle = document.getElementById('btnEditVehicle');
+    const btnDeleteVehicle = document.getElementById('btnDeleteVehicle');
+    const editVehicleForm = document.getElementById('editVehicleForm');
+    const editVehicleName = document.getElementById('editVehicleName');
+    const editVehicleType = document.getElementById('editVehicleType');
+    const btnSaveEditVehicle = document.getElementById('btnSaveEditVehicle');
+    const btnCancelEditVehicle = document.getElementById('btnCancelEditVehicle');
+
+    document.getElementById('date').valueAsDate = new Date();
+
+    // ONGLETS LOGIN / REGISTER
+    tabLogin.addEventListener('click', () => {
+      isRegisterMode = false;
+      tabLogin.className = "w-1/2 pb-2 text-center text-sm font-semibold text-blue-400 border-b-2 border-blue-500";
+      tabRegister.className = "w-1/2 pb-2 text-center text-sm font-semibold text-slate-400 hover:text-slate-200";
+      btnSubmitAuth.textContent = "Se connecter";
+      confirmPasswordContainer.classList.add('hidden');
+      authConfirmPassword.removeAttribute('required');
+      authError.classList.add('hidden');
+    });
+
+    tabRegister.addEventListener('click', () => {
+      isRegisterMode = true;
+      tabRegister.className = "w-1/2 pb-2 text-center text-sm font-semibold text-blue-400 border-b-2 border-blue-500";
+      tabLogin.className = "w-1/2 pb-2 text-center text-sm font-semibold text-slate-400 hover:text-slate-200";
+      btnSubmitAuth.textContent = "Créer mon compte";
+      confirmPasswordContainer.classList.remove('hidden');
+      authConfirmPassword.setAttribute('required', 'true');
+      authError.classList.add('hidden');
+    });
+
+    // SUBMIT AUTH
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      authError.classList.add('hidden');
+      
+      const email = authEmail.value.trim();
+      const password = authPassword.value;
+
+      if (isRegisterMode && password !== authConfirmPassword.value) {
+        authError.textContent = "Les mots de passe ne correspondent pas.";
+        authError.classList.remove('hidden');
+        return;
+      }
+
+      btnSubmitAuth.disabled = true;
+      btnSubmitAuth.textContent = "Connexion en cours...";
+
+      try {
+        if (isRegisterMode) {
+          console.log("[MonCarNote] Création de compte pour :", email);
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          await addDoc(collection(db, "vehicles"), {
+            userId: userCredential.user.uid,
+            name: "Mon Premier Véhicule",
+            type: "🚗 Auto",
+            createdAt: new Date()
+          });
+        } else {
+          console.log("[MonCarNote] Tentative de connexion pour :", email);
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (err) {
+        console.error("[MonCarNote] Erreur Auth :", err);
+        authError.textContent = translateFirebaseError(err.code);
+        authError.classList.remove('hidden');
+        btnSubmitAuth.disabled = false;
+        btnSubmitAuth.textContent = isRegisterMode ? "Créer mon compte" : "Se connecter";
+      }
+    });
+
+    // PASSWORD RESET
+    btnForgotPassword.addEventListener('click', async () => {
+      const email = authEmail.value.trim();
+      if (!email) {
+        authError.textContent = "Veuillez d'abord saisir votre adresse e-mail dans le champ ci-dessus.";
+        authError.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        await sendPasswordResetEmail(auth, email);
+        alert("📧 Un e-mail de réinitialisation de mot de passe a été envoyé à " + email + ".");
+        authError.classList.add('hidden');
+      } catch (err) {
+        console.error("[MonCarNote] Erreur Reset Email :", err);
+        authError.textContent = translateFirebaseError(err.code);
+        authError.classList.remove('hidden');
+      }
+    });
+
+    btnLogout.addEventListener('click', () => signOut(auth));
+
+    // DÉTECTION ÉTAT AUTHENTIFICATION
+    onAuthStateChanged(auth, async (user) => {
+      console.log("[MonCarNote] Changement d'état Auth :", user ? user.email : "Déconnecté");
+      if (user) {
+        currentUser = user;
+        userEmailDisplay.textContent = user.email;
+        
+        // Basculer l'affichage immédiatement
+        authSection.classList.add('hidden');
+        appSection.classList.remove('hidden');
+        
+        btnSubmitAuth.disabled = false;
+        btnSubmitAuth.textContent = "Se connecter";
+
+        await fetchVehicles();
+      } else {
+        currentUser = null;
+        authSection.classList.remove('hidden');
+        appSection.classList.add('hidden');
+        btnSubmitAuth.disabled = false;
+        btnSubmitAuth.textContent = isRegisterMode ? "Créer mon compte" : "Se connecter";
+      }
+    });
+
+    function translateFirebaseError(code) {
+      switch (code) {
+        case 'auth/invalid-credential': return "Adresse e-mail ou mot de passe incorrect.";
+        case 'auth/email-already-in-use': return "Un compte existe déjà avec cet e-mail.";
+        case 'auth/weak-password': return "Le mot de passe doit faire au moins 6 caractères.";
+        case 'auth/user-not-found': return "Aucun compte n'est associé à cette adresse e-mail.";
+        case 'auth/invalid-email': return "Format d'adresse e-mail invalide.";
+        case 'auth/unauthorized-domain': return "Domaine non autorisé dans la console Firebase.";
+        default: return "Erreur (" + code + ")";
+      }
+    }
+
+    // FIRESTORE VÉHICULES
+    async function fetchVehicles() {
+      if (!currentUser) return;
+      vehicles = [];
+      try {
+        console.log("[MonCarNote] Chargement des véhicules depuis Firestore...");
+        const q = query(collection(db, "vehicles"), where("userId", "==", currentUser.uid));
+        const querySnapshot = await getDocs(q);
+
+        querySnapshot.forEach((docSnap) => {
+          vehicles.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        console.log("[MonCarNote] Véhicules trouvés :", vehicles.length);
+
+        if (vehicles.length > 0 && !vehicles.find(v => v.id === currentVehicleId)) {
+          currentVehicleId = vehicles[0].id;
+        }
+
+        renderVehicles();
+      } catch (err) {
+        console.error("[MonCarNote] Erreur Firestore Véhicules :", err);
+        alert("Erreur lors de la récupération des véhicules : " + err.message);
+      }
+    }
+
+    function renderVehicles() {
+      vehicleSelect.innerHTML = '';
+
+      if (vehicles.length === 0) {
+        activeVehicleBadge.textContent = "Aucun véhicule";
+        totalCostBadge.textContent = "Total : 0 €";
+        logList.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">Cliquez sur "+ Ajouter" pour créer votre premier véhicule.</p>';
+        return;
+      }
+
+      vehicles.forEach(v => {
+        const option = document.createElement('option');
+        option.value = v.id;
+        option.textContent = `${v.type} ${v.name}`;
+        if (v.id === currentVehicleId) option.selected = true;
+        vehicleSelect.appendChild(option);
+      });
+
+      const currentVehicle = vehicles.find(v => v.id === currentVehicleId) || vehicles[0];
+      if (currentVehicle) {
+        currentVehicleId = currentVehicle.id;
+        activeVehicleBadge.textContent = `${currentVehicle.type} ${currentVehicle.name}`;
+      }
+
+      fetchLogs();
+    }
+
+    vehicleSelect.addEventListener('change', (e) => {
+      currentVehicleId = e.target.value;
+      editVehicleForm.classList.add('hidden');
+      renderVehicles();
+    });
+
+    btnToggleNewVehicle.addEventListener('click', () => {
+      newVehicleForm.classList.toggle('hidden');
+      editVehicleForm.classList.add('hidden');
+    });
+
+    btnAddVehicle.addEventListener('click', async () => {
+      const name = document.getElementById('newVehicleName').value.trim();
+      const type = document.getElementById('newVehicleType').value;
+
+      if (!name) return alert("Veuillez entrer un nom de véhicule.");
+
+      btnAddVehicle.disabled = true;
+      btnAddVehicle.textContent = "Enregistrement...";
+
+      try {
+        const newDoc = await addDoc(collection(db, "vehicles"), {
+          userId: currentUser.uid,
+          name,
+          type,
+          createdAt: new Date()
+        });
+
+        currentVehicleId = newDoc.id;
+        document.getElementById('newVehicleName').value = '';
+        newVehicleForm.classList.add('hidden');
+        await fetchVehicles();
+      } catch (err) {
+        console.error("[MonCarNote] Erreur ajout véhicule :", err);
+        alert("Erreur lors de l'ajout : " + err.message);
+      } finally {
+        btnAddVehicle.disabled = false;
+        btnAddVehicle.textContent = "Enregistrer le véhicule";
+      }
+    });
+
+    btnEditVehicle.addEventListener('click', () => {
+      const currentVehicle = vehicles.find(v => v.id === currentVehicleId);
+      if (!currentVehicle) return;
+
+      editVehicleName.value = currentVehicle.name;
+      editVehicleType.value = currentVehicle.type;
+      editVehicleForm.classList.remove('hidden');
+      newVehicleForm.classList.add('hidden');
+    });
+
+    btnCancelEditVehicle.addEventListener('click', () => editVehicleForm.classList.add('hidden'));
+
+    btnSaveEditVehicle.addEventListener('click', async () => {
+      const newName = editVehicleName.value.trim();
+      const newType = editVehicleType.value;
+
+      if (!newName) return alert("Le nom ne peut pas être vide.");
+
+      try {
+        await updateDoc(doc(db, "vehicles", currentVehicleId), {
+          name: newName,
+          type: newType
+        });
+        editVehicleForm.classList.add('hidden');
+        await fetchVehicles();
+      } catch (err) {
+        alert("Erreur de modification : " + err.message);
+      }
+    });
+
+    btnDeleteVehicle.addEventListener('click', async () => {
+      const currentVehicle = vehicles.find(v => v.id === currentVehicleId);
+      if (!currentVehicle) return;
+
+      if (!confirm(`Supprimer "${currentVehicle.name}" et tout son historique ?`)) return;
+
+      try {
+        await deleteDoc(doc(db, "vehicles", currentVehicleId));
+        currentVehicleId = null;
+        editVehicleForm.classList.add('hidden');
+        await fetchVehicles();
+      } catch (err) {
+        alert("Erreur de suppression : " + err.message);
+      }
+    });
+
+    // FIRESTORE ENTRETIENS
+    async function fetchLogs() {
+      logs = [];
+      if (!currentVehicleId) return renderLogs();
+
+      try {
+        const q = query(
+          collection(db, "logs"), 
+          where("userId", "==", currentUser.uid),
+          where("vehicleId", "==", currentVehicleId)
+        );
+        
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((docSnap) => {
+          logs.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+        renderLogs();
+      } catch (err) {
+        console.error("[MonCarNote] Erreur révisions :", err);
+      }
+    }
+
+    function renderLogs() {
+      logList.innerHTML = '';
+
+      if (!currentVehicleId) {
+        logList.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">Aucun véhicule sélectionné.</p>';
+        totalCostBadge.textContent = "Total : 0 €";
+        return;
+      }
+
+      const totalCost = logs.reduce((sum, l) => sum + (parseFloat(l.price) || 0), 0);
+      totalCostBadge.textContent = `Total : ${totalCost.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`;
+
+      if (logs.length === 0) {
+        logList.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">Aucun entretien enregistré pour ce véhicule.</p>';
+        return;
+      }
+
+      logs.forEach(log => {
+        const item = document.createElement('div');
+        item.className = 'bg-slate-900 p-4 rounded-lg border border-slate-700 flex justify-between items-center gap-2';
+        const priceDisplay = log.price ? `<span class="text-xs bg-emerald-500/20 text-emerald-400 font-semibold px-2 py-0.5 rounded border border-emerald-500/30">${Number(log.price).toFixed(2)} €</span>` : '';
+
+        item.innerHTML = `
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-medium text-slate-200">${log.type}</span>
+              <span class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">${log.date}</span>
+              ${priceDisplay}
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Réalisé à : <strong class="text-slate-300">${Number(log.km).toLocaleString()} km</strong></p>
+          </div>
+          <div class="text-right flex items-center gap-4">
+            <div>
+              <span class="text-xs text-slate-400 block">Prochaine révision</span>
+              <span class="text-sm font-semibold text-blue-400">${Number(log.nextKm).toLocaleString()} km</span>
+            </div>
+            <button data-id="${log.id}" title="Supprimer" class="btnDeleteLog text-slate-500 hover:text-red-400 text-xs p-1">🗑️</button>
+          </div>
+        `;
+        logList.appendChild(item);
+      });
+
+      document.querySelectorAll('.btnDeleteLog').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const logId = e.currentTarget.getAttribute('data-id');
+          try {
+            await deleteDoc(doc(db, "logs", logId));
+            await fetchLogs();
+          } catch (err) {
+            alert("Erreur lors de la suppression : " + err.message);
+          }
+        });
+      });
+    }
+
+    maintenanceForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentVehicleId) return alert("Veuillez d'abord ajouter un véhicule.");
+
+      const type = document.getElementById('type').value;
+      const date = document.getElementById('date').value;
+      const km = parseInt(document.getElementById('km').value);
+      const priceInput = document.getElementById('price').value;
+      const price = priceInput ? parseFloat(priceInput) : null;
+      let nextKm = parseInt(document.getElementById('nextKm').value) || (km + 10000);
+
+      try {
+        await addDoc(collection(db, "logs"), {
+          userId: currentUser.uid,
+          vehicleId: currentVehicleId,
+          type,
+          date,
+          km,
+          price,
+          nextKm,
+          createdAt: new Date()
+        });
+
+        maintenanceForm.reset();
+        document.getElementById('date').valueAsDate = new Date();
+        await fetchLogs();
+      } catch (err) {
+        alert("Erreur d'ajout d'intervention : " + err.message);
+      }
+    });
+
+    // ONGLETS SECTIONS
+    tabCarnet.addEventListener('click', () => {
+      sectionCarnet.classList.remove('hidden');
+      sectionMethodes.classList.add('hidden');
+      tabCarnet.className = "pb-3 px-2 text-sm font-semibold text-blue-400 border-b-2 border-blue-500 transition-colors";
+      tabMethodes.className = "pb-3 px-2 text-sm font-semibold text-slate-400 hover:text-slate-200 transition-colors";
+    });
+
+    tabMethodes.addEventListener('click', () => {
+      sectionCarnet.classList.add('hidden');
+      sectionMethodes.classList.remove('hidden');
+      tabMethodes.className = "pb-3 px-2 text-sm font-semibold text-blue-400 border-b-2 border-blue-500 transition-colors";
+      tabCarnet.className = "pb-3 px-2 text-sm font-semibold text-slate-400 hover:text-slate-200 transition-colors";
+    });
+  </script>
+</body>
+</html>
